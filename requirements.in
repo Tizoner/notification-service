@@ -1,0 +1,12 @@
+django
+psycopg2
+tzdata
+django-environ
+djangorestframework
+drf-spectacular
+beautifulsoup4
+requests-futures
+whitenoise
+django-debug-toolbar
+django-timezone-field
+drf_ujson2
