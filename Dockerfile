@@ -9,7 +9,6 @@ RUN pip install --upgrade pip \
   && apk del --purge gcc musl-dev libpq-dev apk-tools\
   && python manage.py collectstatic --no-input
 EXPOSE 8000
-CMD wget -qO- https://raw.githubusercontent.com/eficode/wait-for/v2.2.3/wait-for | sh -s -- db:5432 -- python manage.py makemigrations api \
-  && python manage.py migrate \
+CMD wget -qO- https://raw.githubusercontent.com/eficode/wait-for/v2.2.3/wait-for | sh -s -- db:5432 -- python manage.py migrate \
   && python manage.py createsuperuser --no-input \
   && python manage.py runserver --noreload 0.0.0.0:8000
