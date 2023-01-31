@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-from typing import Generator, List
+from typing import List
 
 import requests
 from celery import shared_task
@@ -20,7 +20,7 @@ class Task(BaseModel):
 
 
 def get_distribution_clients(distribution_id: str) -> List[Task]:
-    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:00")
+    now = timezone.now()
     distribution = Distribution.objects.get(id=distribution_id)
     filter = distribution.client_properties_filter
     clients = Client.objects.all()
@@ -39,13 +39,14 @@ def get_distribution_clients(distribution_id: str) -> List[Task]:
             stop_at=distribution.stop_at,
         )
         for client in clients
-        if timezone.localtime(distribution.start_at, client.timezone) < now
-        and timezone.localtime(distribution.stop_at, client.timezone) > now
+        if timezone.localtime(distribution.start_at, client.timezone)
+        < timezone.localtime(now, client.timezone)
+        < timezone.localtime(distribution.stop_at, client.timezone)
     ]
 
 
 def get_tasks_by_time(since: datetime = None, interval: int = 1) -> List[Task]:
-    now = since or datetime.utcnow().strftime("%Y-%m-%d %H:%M:00")
+    now = since or timezone.now()
     tasks = []
     for distribution in Distribution.objects.all():
         filter = distribution.client_properties_filter
@@ -58,9 +59,9 @@ def get_tasks_by_time(since: datetime = None, interval: int = 1) -> List[Task]:
             clients = clients.filter(tag=filter[key])
         for client in clients:
             if (
-                now
+                timezone.localtime(now, client.timezone)
                 < timezone.localtime(distribution.start_at, client.timezone)
-                < now + timedelta(minutes=interval)
+                < timezone.localtime(now, client.timezone) + timedelta(minutes=interval)
                 and timezone.localtime(distribution.stop_at, client.timezone) > now
             ):
                 tasks.append(
@@ -104,15 +105,14 @@ def notify_client(task_data: str):
     message.save(update_fields=["sending_status"])
 
 
-def add_sending_tasks(tasks_generator: Generator):
+def add_sending_tasks(tasks: List[Task]):
     """Adds a batch of tasks to the queue.
 
     Args:
-        tasks_generator (Generator): Generator of Task instances
+        tasks (List): List of Task instances
     """
-    while tasks := next(tasks_generator, None):
-        for task in tasks:
-            notify_client.apply_async(args=[task.json()], expires=task.stop_at)
+    for task in tasks:
+        notify_client.apply_async(args=[task.json()], expires=task.stop_at)
 
 
 @shared_task
