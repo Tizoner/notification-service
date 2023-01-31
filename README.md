@@ -6,7 +6,7 @@
 ```
 git clone https://github.com/Tizoner/notification-service.git && cd notification-service
 ```
-Затем запусти все сервисы проекта одной командой:
+В файле **`.env`** замени значение переменной окружения `JWT` реальным токеном доступа. После этого запусти все сервисы проекта одной командой:
 ```
 docker compose up
 ```
