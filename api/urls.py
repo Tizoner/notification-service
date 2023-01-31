@@ -1,7 +1,7 @@
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from api.views import (
+from .views import (
     ClientCreate,
     ClientUpdateDestroy,
     DistributionCreate,

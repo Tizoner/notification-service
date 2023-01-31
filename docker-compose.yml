@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   web:
     build: .
@@ -5,11 +7,39 @@ services:
       - 8000:8000
     depends_on:
       - db
+    restart: unless-stopped
+
   db:
     image: postgres:15.0-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - db.env
+      - envs/db.env
+
+  redis:
+    image: redis:7.0.8-alpine
+    # ports:
+    #   - 6379:6379
+
+  celery-beat:
+    # container_name: notice_celery_beat
+    env_file: envs/web.env
+    build: .
+    command: celery -A notification_service beat
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  celery-worker:
+    # container_name: notice_celery_worker
+    env_file: envs/web.env
+    build: .
+    command: celery -A notification_service worker
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
 volumes:
   postgres_data:

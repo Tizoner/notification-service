@@ -5,7 +5,7 @@ from django.db import models
 from timezone_field import TimeZoneField
 from ujson import dumps
 
-from api.utils import serialize_object
+from .utils import serialize_object
 
 
 class BaseModel(models.Model):
@@ -64,15 +64,8 @@ class Client(BaseModel):
     timezone = TimeZoneField(choices_display="WITH_GMT_OFFSET")
 
 
-class SendingStatus(models.IntegerChoices):
-    SUCCESS = 200
-    INVALID_SERVICE_RESPONSE = 502
-    SERVICE_UNAVAILABLE = 503
-    SERVICE_RESPONSE_TIMEOUT = 504
-
-
 class Message(BaseModel):
     created_at = models.DateTimeField(auto_now_add=True)
-    sending_status = models.PositiveIntegerField(choices=SendingStatus.choices)
+    sending_status = models.PositiveIntegerField()
     distribution = models.ForeignKey(Distribution, on_delete=models.PROTECT)
     client = models.ForeignKey(Client, on_delete=models.PROTECT)

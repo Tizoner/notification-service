@@ -4,14 +4,14 @@ from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from api.models import Client, Distribution, Message
-from api.serializers import (
+from .models import Client, Distribution, Message
+from .serializers import (
     ClientSerializer,
     DistributionGeneralStatisticsSerializer,
     DistributionSerializer,
     MessageSerializer,
 )
-from api.utils import detail
+from .utils import detail
 
 
 class ClientCreate(generics.CreateAPIView):

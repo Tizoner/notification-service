@@ -12,8 +12,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import socket
 from pathlib import Path
 
+from celery.schedules import crontab
 from environ import Env
 
+Env.read_env("envs/web.env")
 env = Env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -147,6 +149,15 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://redis:6379/0")
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="redis://redis:6379/1")
+CELERY_SCHEDULE_INTERVAL = env("CELERY_SCHEDULE_INTERVAL", default=1)
+CELERY_BEAT_SCHEDULE = {
+    "send_notifications": {
+        "task": "notification_service.tasks.check_active_distributions",
+        "schedule": crontab(minute=f"*/{CELERY_SCHEDULE_INTERVAL}"),
+    },
+}
 
 if DEBUG:
     INSTALLED_APPS.append("debug_toolbar")

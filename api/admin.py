@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from api.models import Client, Distribution, Message
+from .models import Client, Distribution, Message
 
 
 class CustomModelAdmin(admin.ModelAdmin):

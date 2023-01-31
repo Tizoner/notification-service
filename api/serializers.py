@@ -2,8 +2,8 @@ from drf_spectacular.plumbing import build_basic_type, build_object_type
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from api.fields import ClientPropertiesFilterSerializerField, TimeZoneSerializerField
-from api.models import Client, Distribution, Message
+from .fields import ClientPropertiesFilterSerializerField, TimeZoneSerializerField
+from .models import Client, Distribution, Message
 
 
 class ClientPropertiesFilterSerializer(serializers.ModelSerializer):

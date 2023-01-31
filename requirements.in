@@ -10,3 +10,7 @@ whitenoise
 django-debug-toolbar
 django-timezone-field
 drf_ujson2
+celery
+uwsgi
+pydantic
+redis

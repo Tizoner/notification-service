@@ -5,4 +5,4 @@ Dockerfile
 *.*
 !requirements.txt
 !manage.py
-!.env
+!uwsgi.ini
