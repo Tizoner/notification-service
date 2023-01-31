@@ -3,12 +3,10 @@
 import os
 import sys
 
-# from environ import Env
 
 
 def main():
     """Run administrative tasks."""
-    # Env.read_env("envs/web.env")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "notification_service.settings")
     try:
         from django.core.management import execute_from_command_line

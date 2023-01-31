@@ -154,7 +154,7 @@ CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="redis://redis:6379
 CELERY_SCHEDULE_INTERVAL = env("CELERY_SCHEDULE_INTERVAL", default=1)
 CELERY_BEAT_SCHEDULE = {
     "send_notifications": {
-        "task": "notification_service.tasks.check_active_distributions",
+        "task": "api.tasks.check_active_distributions",
         "schedule": crontab(minute=f"*/{CELERY_SCHEDULE_INTERVAL}"),
     },
 }
