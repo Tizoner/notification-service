@@ -4,7 +4,7 @@
 
 [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) и [Docker Compose](https://docs.docker.com/compose/install/linux/) должны быть предварительно установлены. Склонируй репозиторий и перейди в папку с проектом:
 ```
-git clone https://github.com/Tizoner/notifications-service.git && cd notifications-service
+git clone https://github.com/Tizoner/notification-service.git && cd notification-service
 ```
 Затем запусти все сервисы проекта одной командой:
 ```
