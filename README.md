@@ -11,9 +11,10 @@ git clone https://github.com/Tizoner/notification-service.git && cd notification
 docker compose up
 ```
 После этого по адресу /docs/ становится доступна документация разработанного API в формате OpenApi.
-По адресу /admin/ можно попасть в админ панель. Аккаунт администратора будет создан автоматически на основе данных из .env файла.
+По адресу /admin/ можно попасть в админ панель. Аккаунт администратора будет создан автоматически на основе данных из **`envs/web.env`** файла.
 
 ## Использованные технологии
+
 - Язык программирования [Python](https://www.python.org) &nbsp;`3.10`
 - Веб-фреймворк [Django](https://www.djangoproject.com) &nbsp;`4.1`
 - REST фреймворк [DRF](https://www.django-rest-framework.org) &nbsp;`3.14`
@@ -23,6 +24,7 @@ docker compose up
 - Платформа контейнеризации [Docker](https://www.docker.com) &nbsp;`20.10`
 
 ## Примечание
+
 Файлы  **`envs/web.env`**, **`envs/db.env`** содержат примеры значений используемых переменных окружения, поэтому эти файлы не были добавлены в .gitignore.
 
 ## Выполненные дополнительные задания
