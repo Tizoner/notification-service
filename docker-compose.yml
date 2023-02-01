@@ -20,8 +20,8 @@ services:
 
   redis:
     image: redis:7.0.8-alpine
-    ports:
-      - 6379:6379
+    # ports:
+    #   - 6379:6379
 
   celery-beat:
     env_file: envs/web.env

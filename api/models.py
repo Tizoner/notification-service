@@ -66,6 +66,6 @@ class Client(BaseModel):
 
 class Message(BaseModel):
     created_at = models.DateTimeField(auto_now_add=True)
-    sending_status = models.PositiveIntegerField()
+    sending_status = models.PositiveIntegerField(null=True, blank=True)
     distribution = models.ForeignKey(Distribution, on_delete=models.PROTECT)
     client = models.ForeignKey(Client, on_delete=models.PROTECT)

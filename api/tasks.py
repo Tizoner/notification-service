@@ -7,6 +7,7 @@ from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
 from pydantic import BaseModel
+from rest_framework.exceptions import ValidationError
 
 from .models import Client, Distribution, Message
 
@@ -46,7 +47,7 @@ def get_distribution_clients(distribution_id: str) -> List[Task]:
 
 
 def get_tasks_by_time(since: datetime = None, interval: int = 1) -> List[Task]:
-    now = since or timezone.now()
+    now = since or timezone.now().replace(second=0)
     tasks = []
     for distribution in Distribution.objects.all():
         filter = distribution.client_properties_filter
@@ -62,11 +63,10 @@ def get_tasks_by_time(since: datetime = None, interval: int = 1) -> List[Task]:
                 timezone.localtime(now, client.timezone)
                 < timezone.localtime(distribution.start_at, client.timezone)
                 < timezone.localtime(now, client.timezone) + timedelta(minutes=interval)
-                and timezone.localtime(distribution.stop_at, client.timezone) > now
             ):
                 tasks.append(
                     Task(
-                        distribution_id=distribution_id,
+                        distribution_id=distribution.id,
                         client_id=client.id,
                         message_text=distribution.message_text,
                         phone_number=client.phone_number,
@@ -95,7 +95,7 @@ def notify_client(task_data: str):
         client=Client(task.client_id),
     )
     message.save()
-    msg = Msg(id=message.id, phone=task.phone_number, text=task.message)
+    msg = Msg(id=message.id, phone=task.phone_number, text=task.message_text)
     response = requests.post(
         f"https://probe.fbrq.cloud/v1/send/{msg.id}",
         headers={"Authorization": f"Bearer {settings.JWT}"},
