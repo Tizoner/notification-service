@@ -7,7 +7,6 @@ from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
 from pydantic import BaseModel
-from rest_framework.exceptions import ValidationError
 
 from .models import Client, Distribution, Message
 
