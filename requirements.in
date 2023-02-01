@@ -4,6 +4,7 @@ tzdata
 django-environ
 djangorestframework
 drf-spectacular
+requests
 whitenoise
 django-debug-toolbar
 django-timezone-field
