@@ -4,7 +4,6 @@ tzdata
 django-environ
 djangorestframework
 drf-spectacular
-beautifulsoup4
 whitenoise
 django-debug-toolbar
 django-timezone-field
