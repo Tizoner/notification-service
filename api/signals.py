@@ -9,5 +9,5 @@ from .tasks import process_active_distribution
 
 @receiver(post_save, sender="api.Distribution")
 def on_post_save_distribution(sender, instance, created, **kwargs):
-    if created and instance.amount < datetime.now(utc):
+    if created and instance.start_at < datetime.now(utc):
         process_active_distribution.apply_async(args=[instance.id])
