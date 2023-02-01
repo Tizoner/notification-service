@@ -58,10 +58,11 @@ def get_tasks_by_time(since: datetime = None, interval: int = 1) -> List[Task]:
         if key in filter:
             clients = clients.filter(tag=filter[key])
         for client in clients:
+            now = timezone.localtime(now, client.timezone)
             if (
-                timezone.localtime(now, client.timezone)
+                now
                 < timezone.localtime(distribution.start_at, client.timezone)
-                < timezone.localtime(now, client.timezone) + timedelta(minutes=interval)
+                < now + timedelta(minutes=interval)
             ):
                 tasks.append(
                     Task(
