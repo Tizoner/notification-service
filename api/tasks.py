@@ -84,7 +84,7 @@ class Msg(BaseModel):
 
 @shared_task
 def notify_client(task_data: str):
-    """Creates the task to send single message for a client.
+    """Send single message for a client.
 
     Args:
         task_data (str): JSON string with task data
