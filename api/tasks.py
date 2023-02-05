@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 
 import requests
@@ -19,9 +19,9 @@ class Task(BaseModel):
     stop_at: datetime
 
 
-def get_distribution_clients(distribution_id: str) -> List[Task]:
-    now = timezone.now()
-    distribution = Distribution.objects.get(id=distribution_id)
+def get_distribution_tasks(
+    distribution: Distribution, now: datetime = timezone.now()
+) -> List[Task]:
     filter = distribution.client_properties_filter
     clients = Client.objects.all()
     key = "mobile_operator_code"
@@ -30,49 +30,27 @@ def get_distribution_clients(distribution_id: str) -> List[Task]:
     key = "tag"
     if key in filter:
         clients = clients.filter(tag=filter[key])
-    return [
-        Task(
-            distribution_id=distribution_id,
-            client_id=client.id,
-            message_text=distribution.message_text,
-            phone_number=client.phone_number,
-            stop_at=distribution.stop_at,
-        )
-        for client in clients
-        if timezone.localtime(distribution.start_at, client.timezone)
-        < timezone.localtime(now, client.timezone)
-        < timezone.localtime(distribution.stop_at, client.timezone)
-    ]
+    for client in clients:
+        if (
+            timezone.localtime(distribution.start_at, client.timezone)
+            < timezone.localtime(now, client.timezone)
+            < timezone.localtime(distribution.stop_at, client.timezone)
+        ):
+            yield Task(
+                distribution_id=distribution.id,
+                client_id=client.id,
+                message_text=distribution.message_text,
+                phone_number=client.phone_number,
+                stop_at=distribution.stop_at,
+            )
 
 
-def get_tasks_by_time(since: datetime = None, interval: int = 1) -> List[Task]:
-    now = since or timezone.now().replace(second=0)
+def get_distributions_tasks(interval: int = 1) -> List[Task]:
+    now = timezone.now()
     tasks = []
     for distribution in Distribution.objects.all():
-        filter = distribution.client_properties_filter
-        clients = Client.objects.all()
-        key = "mobile_operator_code"
-        if key in filter:
-            clients = clients.filter(mobile_operator_code=filter[key])
-        key = "tag"
-        if key in filter:
-            clients = clients.filter(tag=filter[key])
-        for client in clients:
-            now = timezone.localtime(now, client.timezone)
-            if (
-                now
-                < timezone.localtime(distribution.start_at, client.timezone)
-                < now + timedelta(minutes=interval)
-            ):
-                tasks.append(
-                    Task(
-                        distribution_id=distribution.id,
-                        client_id=client.id,
-                        message_text=distribution.message_text,
-                        phone_number=client.phone_number,
-                        stop_at=distribution.stop_at,
-                    )
-                )
+        for task in get_distribution_tasks(distribution, now):
+            tasks.append(task)
     return tasks
 
 
@@ -96,13 +74,21 @@ def notify_client(task_data: str):
     )
     message.save()
     msg = Msg(id=message.id, phone=task.phone_number, text=task.message_text)
-    response = requests.post(
-        f"https://probe.fbrq.cloud/v1/send/{msg.id}",
-        headers={"Authorization": f"Bearer {settings.JWT}"},
-        json=msg.dict(),
-    )
-    message.sending_status = response.status_code
+    try:
+        response = requests.post(
+            f"https://probe.fbrq.cloud/v1/send/{msg.id}",
+            headers={"Authorization": f"Bearer {settings.JWT}"},
+            json=msg.dict(),
+            timeout=3,
+        )
+        message.sending_status = response.status_code
+    except requests.Timeout:
+        message.sending_status = 504
     message.save(update_fields=["sending_status"])
+
+
+#     INVALID_SERVICE_RESPONSE = 502
+#     SERVICE_RESPONSE_TIMEOUT = 504
 
 
 def add_sending_tasks(tasks: List[Task]):
@@ -118,10 +104,14 @@ def add_sending_tasks(tasks: List[Task]):
 @shared_task
 def check_active_distributions():
     """Scheduled task for CELERY_BEAT_SCHEDULE. Search for clients to send at the current time"""
-    add_sending_tasks(get_tasks_by_time(interval=settings.CELERY_SCHEDULE_INTERVAL))
+    add_sending_tasks(
+        get_distributions_tasks(interval=settings.CELERY_SCHEDULE_INTERVAL)
+    )
 
 
 @shared_task
 def process_active_distribution(distribution_id: str):
     """Search for clients to send by a given distribution"""
-    add_sending_tasks(get_distribution_clients(distribution_id))
+    add_sending_tasks(
+        get_distribution_tasks(Distribution.objects.get(id=distribution_id))
+    )
