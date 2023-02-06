@@ -45,13 +45,10 @@ def get_distribution_tasks(
             )
 
 
-def get_distributions_tasks(interval: int = 1) -> List[Task]:
+def get_distributions_tasks() -> List[Task]:
     now = timezone.now()
-    tasks = []
     for distribution in Distribution.objects.all():
-        for task in get_distribution_tasks(distribution, now):
-            tasks.append(task)
-    return tasks
+        yield from get_distribution_tasks(distribution, now)
 
 
 class Msg(BaseModel):
@@ -87,10 +84,6 @@ def notify_client(task_data: str):
     message.save(update_fields=["sending_status"])
 
 
-#     INVALID_SERVICE_RESPONSE = 502
-#     SERVICE_RESPONSE_TIMEOUT = 504
-
-
 def add_sending_tasks(tasks: List[Task]):
     """Adds a batch of tasks to the queue.
 
@@ -104,9 +97,7 @@ def add_sending_tasks(tasks: List[Task]):
 @shared_task
 def check_active_distributions():
     """Scheduled task for CELERY_BEAT_SCHEDULE. Search for clients to send at the current time"""
-    add_sending_tasks(
-        get_distributions_tasks(interval=settings.CELERY_SCHEDULE_INTERVAL)
-    )
+    add_sending_tasks(get_distributions_tasks())
 
 
 @shared_task

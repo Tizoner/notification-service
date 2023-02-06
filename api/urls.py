@@ -8,6 +8,7 @@ from .views import (
     DistributionDetailedStatisticsView,
     DistributionGeneralStatisticsView,
     DistributionUpdateDestroy,
+    process_active_distributions,
 )
 
 urlpatterns = [
@@ -28,6 +29,7 @@ urlpatterns = [
             [
                 path("", DistributionCreate.as_view()),
                 path("<int:pk>", DistributionUpdateDestroy.as_view()),
+                path("process", process_active_distributions),
             ]
         ),
     ),

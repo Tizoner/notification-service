@@ -1,8 +1,11 @@
 from drf_spectacular.plumbing import build_basic_type, build_object_type
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import generics, status
+from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+
+from api.tasks import check_active_distributions
 
 from .models import Client, Distribution, Message
 from .serializers import (
@@ -69,3 +72,17 @@ class DistributionUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Distribution.objects.all()
     serializer_class = DistributionSerializer
     http_method_names = ["put", "patch", "delete"]
+
+
+@extend_schema(
+    summary="обработка активных рассылок и отправка сообщений клиентам",
+    responses={
+        status.HTTP_204_NO_CONTENT: OpenApiResponse(
+            description="Запрос успешно выполнен",
+        )
+    },
+)
+@api_view(["GET"])
+def process_active_distributions(request):
+    check_active_distributions()
+    return Response(None, status=status.HTTP_204_NO_CONTENT)

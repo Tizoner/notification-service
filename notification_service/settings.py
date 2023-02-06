@@ -151,11 +151,10 @@ SPECTACULAR_SETTINGS = {
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://redis:6379/0")
 CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="redis://redis:6379/1")
-CELERY_SCHEDULE_INTERVAL = env("CELERY_SCHEDULE_INTERVAL", default=1)
 CELERY_BEAT_SCHEDULE = {
     "send_notifications": {
         "task": "api.tasks.check_active_distributions",
-        "schedule": crontab(minute=f"*/{CELERY_SCHEDULE_INTERVAL}"),
+        "schedule": crontab(minute=f"*/1"),
     },
 }
 
